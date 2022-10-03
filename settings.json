@@ -1,0 +1,7 @@
+{
+	"SongsDirectory" : "/home/skilo/Musica/mp3/",
+	"MediaFileExtension" : "*.mp3",
+	"NumberOfSongsToPlay" : 10,
+	"DefaultHour" : 21,
+	"DefaultMinutes" : 26 
+}
