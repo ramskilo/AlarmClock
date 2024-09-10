@@ -71,7 +71,8 @@ def ciclo_base(l_song_to_play, alarmMin, alarmHour):
     #         os.read(rfd, 1)
     #         l_times += 1
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     pass
     # Tell Python to run the handler() function when SIGINT is received
     # signal.signal(SIGINT, handler)
