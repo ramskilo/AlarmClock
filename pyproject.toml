@@ -28,7 +28,8 @@ flake8-bugbear = "^24.8.19"
 flake8-isort = "^6.1.1"
 pep8-naming = "^0.14.1"
 playsound3 = "^2.2.1"
-python = "^3.12"
+python = "^3.9"
+python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
@@ -43,5 +44,5 @@ src_paths = ["src", "tests"]
 use_parentheses = true
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core", "setuptools", "wheel"]
+build-backend = ["poetry.core.masonry.api", "setuptools.build_meta"]

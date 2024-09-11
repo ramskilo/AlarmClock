@@ -9,10 +9,22 @@
 # import signal
 # from sys import exit
 # from _signal import SIGINT
-import os
 
-rfd, wfd = os.pipe()
-global l_times
+from pathlib import Path
+
+import settings
+
+
+def find_files(dirfiles, extension):
+    path = Path(dirfiles)
+    return list(path.rglob("*.{}".format(extension)))
+
+
+music_files = find_files(settings.SONGS_DIRECTORY, settings.MEDIA_FILE_EXTENSION)
+print(f"{len(music_files)} files found")
+
+for mp3 in music_files:
+    print(mp3)
 
 
 def handler(signal_received, frame):
