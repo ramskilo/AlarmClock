@@ -1,12 +1,14 @@
 import sys
+import tkinter
 from pathlib import Path
 
-import pygame
 import settings
 
-pygame.init()
-screen = pygame.display.set_mode((600, 400))
-pygame.display.set_caption("Alarm Clock")
+root = tkinter.Tk()
+root.title("Alarm Clock")
+root.geometry("600x400")
+root.mainloop()
+
 alarm_is_on = True
 
 
@@ -21,16 +23,15 @@ for mp3 in music_files:
     print(mp3)
 
 while alarm_is_on:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # exit the program
-            alarm_is_on = False
-        if event.type == pygame.KEYDOWN:  # key pressed
-            if event.key == pygame.K_LEFT:  # left arrow key
-                print("Previous")
-            if event.key == pygame.K_RIGHT:  # right arrow key
-                print("Next")
-    screen.fill((0, 0, 0))
-    pygame.display.update()
+    pass
+    # for event in pygame.event.get():
+    #     if event.type == pygame.QUIT:  # exit the program
+    #         alarm_is_on = False
+    #     if event.type == pygame.KEYDOWN:  # key pressed
+    #         if event.key == pygame.K_LEFT:  # left arrow key
+    #             print("Previous")
+    #         if event.key == pygame.K_RIGHT:  # right arrow key
+    #             print("Next")
+    # pygame.display.flip()
 
-pygame.quit()
 sys.exit()
