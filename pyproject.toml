@@ -30,6 +30,8 @@ pep8-naming = "^0.14.1"
 playsound3 = "^2.2.1"
 python = "^3.9"
 python-dotenv = "^1.0.1"
+keyboard = "^0.13.5"
+pygame = "^2.6.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
