@@ -10,7 +10,7 @@ indent_size=4
 trim_trailing_whitespace=true
 
 [*.py]
-tab_width=8
+tab_width=4
 
 [{.*rc,*.*rc,*.config,*.json}]
 indent_style=space
