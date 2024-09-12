@@ -1,5 +1,6 @@
+import random
 import time
-import tkinter
+import tkinter as tk
 from pathlib import Path
 
 import settings
@@ -22,58 +23,58 @@ class Debounce:
 class Radio:
     def __init__(self, playlist):
         self.playlist = playlist
-        self.current = 0
+        self.history = []
+        self.current = random.randint(0, len(playlist) - 1)
 
     def play(self):
-        print("Playing song")
+        print(f"Playing: {self.playlist[self.current]}")
 
     def stop(self):
         print("Stopping song")
 
     def next(self):
-        print("Next song")
+        valid_numbers = [i for i in range(len(self.playlist)) if i not in self.history]
+        if not valid_numbers:
+            print("No more songs to play")
+            return
+        self.history.append(self.current)
+        self.current = random.choice(valid_numbers)
+        self.play()
 
     def previous(self):
-        print("Previous song")
-
-    def current_song(self):
-        return self.playlist[self.current]
+        if not self.history:
+            print("No previous songs")
+            return
+        self.current = self.history.pop()
+        self.play()
 
 
 def find_files(dirfiles, extension):
-    path = Path(dirfiles)
-    return list(path.rglob("*.{}".format(extension)))
+    return list(Path(dirfiles).rglob(f"*.{extension}"))
 
 
 def process_key(event):
     if event.keysym == "Escape":
         app.quit()
-    else:
-        print(f"Key pressed: {event.keysym}")
-        if event.keysym == "Left":
-            radio.previous()
-        if event.keysym == "Right":
-            radio.next()
+    elif event.keysym == "Left":
+        radio.previous()
+    elif event.keysym == "Right":
+        radio.next()
 
 
 def main():
     print("Starting Radio!")
-    # root.after(1000, say_hello)
+    radio.play()
 
 
-# Load songs
 filelist = find_files(settings.SONGS_DIRECTORY, settings.MEDIA_FILE_EXTENSION)
-for mp3 in filelist:
-    print(mp3)
 
-# Start GUI
-app = tkinter.Tk()
+app = tk.Tk()
 app.title("Alarm Clock")
 app.geometry("600x400")
-# Start radio istance
+
 radio = Radio(playlist=filelist)
-# Debounce click events
 debounce = Debounce(app)
-# Start main loop
+
 app.after(200, main)
 app.mainloop()
