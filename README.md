@@ -3,7 +3,7 @@ This is an alarm clock to wake you up with your mp3 songs
 
 Settings are in settings.json in this format:
 
-
+```json
 {
 	"SongsDirectory" : "/home/skilo/Musica/mp3/",   --> the dir where you store your song files
 	"MediaFileExtension" : "*.mp3",                 --> the extension of your media files
@@ -16,4 +16,4 @@ Settings are in settings.json in this format:
 
 
 If time is not fully defined in this file, you will be asked about that upon lauch of the script
-NOTE: the keys in the settings.json must appear in any case
+**NOTE**: the key names in the settings.json are mandatory

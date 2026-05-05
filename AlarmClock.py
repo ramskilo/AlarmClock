@@ -10,6 +10,7 @@ import signal
 from sys import exit
 from _signal import SIGINT
 import os
+from pathlib import Path
 
 rfd, wfd = os.pipe()
 global l_times
@@ -35,58 +36,37 @@ def load_json_data(json_data):
         return data
     except json.JSONDecodeError:
         # Handle the JSONDecodeError by printing an error message
+        print(f"Error while reading the file {json_data}!")
         return {"songsPlayed": []}
-
-
-def ciclo_base(l_song_to_play, alarmMin, alarmHour):
-    current_time = datetime.datetime.now()
-    time.sleep(0.2)
-    print("...")
-    if (alarmHour == current_time.hour and alarmMin == current_time.minute) or (l_times <= l_number_of_songs and l_times > 1):
-        print("Playing...")
-        while not l_song_to_play:
-            start = time.time()
-            l_letter = random.choice('LM' + string.digits)
-            l_letter2 = random.choice(string.ascii_letters)
-            l_constr_pattern = f"{l_songs_directory}{l_letter2}*/{l_letter}{l_extension}"
-            l_song = glob.glob(l_constr_pattern)
-            if l_song:
-                l_song_to_play = l_song[0]
-            if time.time() - start >= timeout:
-                break
-            if l_song_to_play in played.get("songsPlayed", []):
-                l_song_to_play = ""
-            print(l_song_to_play)
-            if l_song_to_play:
-                played.get("songsPlayed").append(l_song_to_play)
-                with open("played.json", 'w') as filehandle:
-                    json.dump(played, filehandle)
-            print(l_song_to_play)
-            playsound(l_song_to_play)
-            l_song_to_play = ""
-            os.read(rfd, 1)
-            l_times += 1
 
 if __name__ == '__main__':
     # Tell Python to run the handler() function when SIGINT is received
     signal.signal(SIGINT, handler)
     signal.signal(20, handlerNext)  #
 
+    BASE_DIR = Path(__file__).resolve().parent
+
     l_song_to_play = ""
     l_times = 1
     timeout = 60  # seconds
     played = {"songsPlayed": []}
-
-    with open('settings.json') as f:
+    
+    settings_file = BASE_DIR / 'settings.json'
+    played_file = BASE_DIR / 'played.json'
+    print(f"BASE DIR: {BASE_DIR}")    
+    print(f"SETTINGS FILE: {settings_file}")    
+    print(f"PLAYED FILE: {played_file}")    
+    with open(settings_file) as f:
         data = load_json_data(f)
 
-    with open('played.json') as f:
+    with open(played_file) as f:
         played = load_json_data(f)
 
     l_number_of_songs = data.get('NumberOfSongsToPlay', 0)
     l_songs_directory = data.get('SongsDirectory', '')
     l_extension = data.get('MediaFileExtension', '')
-
+    print(f"SONGS DIR: {l_songs_directory}")    
+    
     alarmHour = data.get('DefaultHour')
     alarmMin = data.get('DefaultMinutes')
 
@@ -105,10 +85,12 @@ if __name__ == '__main__':
             print("Playing...")
             while not l_song_to_play:
                 start = time.time()
-                l_letter = random.choice('LM' + string.digits)
+                l_letter = random.choice(string.digits)
                 l_letter2 = random.choice(string.ascii_letters)
-                l_constr_pattern = f"{l_songs_directory}{l_letter2}*/{l_letter}{l_extension}"
+                l_constr_pattern = f"{l_songs_directory}{l_extension}"
                 l_song = glob.glob(l_constr_pattern)
+                print(f"PATTERN:{l_constr_pattern}")
+                print(f"GLOB:{l_song}")
                 if l_song:
                     l_song_to_play = l_song[0]
                 if time.time() - start >= timeout:
@@ -118,7 +100,7 @@ if __name__ == '__main__':
                 print(l_song_to_play)
                 if l_song_to_play:
                     played.get("songsPlayed").append(l_song_to_play)
-                    with open("played.json", 'w') as filehandle:
+                    with open(played_file, 'w') as filehandle:
                         json.dump(played, filehandle)
                 print(l_song_to_play)
                 playsound(l_song_to_play)
