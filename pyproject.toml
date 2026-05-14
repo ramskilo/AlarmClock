@@ -1,0 +1,25 @@
+[project]
+name = "alarmclock"
+version = "0.1.0"
+description = "Alarm Clock"
+authors = [
+    {name = "Ramskilo", email = "ramskilo@gmail.com"}
+]
+license = {text = "GPL"}
+readme = "README.md"
+requires-python = ">=3.13"
+# Nota le virgolette e la virgola
+dependencies = [
+	"playsound3>=3.0.0",
+	"importlib (>=1.0.4,<2.0.0)",
+]
+
+[tool.poetry]
+# Obbligatorio se il codice è in src/alarmclock
+packages = [{include = "alarmclock", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+[tool.poetry.scripts]
+alarm = "alarmclock.main:main"
