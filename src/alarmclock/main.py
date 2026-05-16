@@ -49,14 +49,19 @@ def main():
     l_songs_directory = data.get('SongsDirectory', './')
     l_extension = data.get('MediaFileExtension', '*.mp3')
     l_number_of_songs = data.get('NumberOfSongsToPlay', 1)
-    alarmHour = data.get('DefaultHour', 7)
-    alarmMin = data.get('DefaultMinutes', 30)
+    current_time = datetime.datetime.now()
+    alarmHour = data.get('DefaultHour', "") 
+    if alarmHour == "":
+        alarmHour = str(current_time.hour)
+    alarmMin = data.get('DefaultMinutes', "")
+    if alarmMin == "":
+        alarmMin = str(current_time.minute)
 
     print(f"Sveglia impostata alle {alarmHour}:{alarmMin}")
+    start_time = datetime.datetime.now()
 
-    while l_times <= l_number_of_songs:
-        current_time = datetime.datetime.now()
-        
+    while l_times <= l_number_of_songs or (start_time > current_time - datetime.timedelta(minutes=30)):
+                
         # Controllo orario
         if current_time.hour == int(alarmHour) and current_time.minute == int(alarmMin):
             print("Ora di svegliarsi!")
@@ -65,9 +70,9 @@ def main():
             pattern = os.path.join(l_songs_directory, l_extension)
             available_songs = glob.glob(pattern)
             
-            # Filtra già giocate
+            # Filtra già suonate
             pool = [s for s in available_songs if s not in played.get("songsPlayed", [])]
-            if not pool: pool = available_songs # Reset se tutte giocate
+            if not pool: pool = available_songs # Reset se tutte suonate
 
             if pool:
                 song_to_play = random.choice(pool)
