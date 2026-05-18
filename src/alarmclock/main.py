@@ -57,26 +57,26 @@ def main():
     if alarmMin == "":
         alarmMin = str(current_time.minute)
 
-    print(f"Sveglia impostata alle {alarmHour}:{alarmMin}")
+    print(f"{datetime.datetime.now()}: Sveglia impostata alle {alarmHour}:{alarmMin}")
     start_time = datetime.datetime.now()
 
-    while l_times <= l_number_of_songs or (start_time > current_time - datetime.timedelta(minutes=30)):
+    while l_times <= l_number_of_songs or (start_time > (current_time - datetime.timedelta(minutes=30))):
                 
         # Controllo orario
         if current_time.hour == int(alarmHour) and current_time.minute == int(alarmMin):
-            print("Ora di svegliarsi!")
+            print(f"{datetime.datetime.now()}: Ora di svegliarsi!")
             
             # Costruzione lista canzoni (spostata fuori dal loop scelta per efficienza)
-            pattern = os.path.join(l_songs_directory, l_extension)
+            pattern = os.path.join(l_songs_directory, "*/", l_extension)
             available_songs = glob.glob(pattern)
-            
+
             # Filtra già suonate
             pool = [s for s in available_songs if s not in played.get("songsPlayed", [])]
             if not pool: pool = available_songs # Reset se tutte suonate
 
             if pool:
                 song_to_play = random.choice(pool)
-                print(f"Riproduzione: {song_to_play}")
+                print(f"{datetime.datetime.now()}: Riproduzione: {song_to_play}")
                 
                 # Aggiorna played.json
                 played.setdefault("songsPlayed", []).append(song_to_play)
@@ -88,12 +88,13 @@ def main():
                 l_times += 1
                 
                 # Aspetta un minuto per evitare che riparta nello stesso minuto
-                time.sleep(60) 
+                time.sleep(10) 
             else:
-                print("Nessuna canzone trovata!")
+                print(f"{datetime.datetime.now()}: Nessuna canzone trovata!")
                 break
         
         time.sleep(30) # Controllo ogni 30 secondi (salva CPU e Log)
 
 if __name__ == "__main__":
     main()
+
