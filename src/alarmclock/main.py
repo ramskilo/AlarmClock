@@ -60,7 +60,7 @@ def main():
     print(f"{datetime.datetime.now()}: Sveglia impostata alle {alarmHour}:{alarmMin}")
     start_time = datetime.datetime.now()
 
-    while l_times <= l_number_of_songs or (start_time > (current_time - datetime.timedelta(minutes=30))):
+    while l_times <= l_number_of_songs:
                 
         # Controllo orario
         if current_time.hour == int(alarmHour) and current_time.minute == int(alarmMin):
@@ -87,8 +87,8 @@ def main():
                 playsound(song_to_play)
                 l_times += 1
                 
-                # Aspetta un minuto per evitare che riparta nello stesso minuto
-                time.sleep(10) 
+                # Aspetta per evitare che riparta nello stesso minuto
+                time.sleep(8) 
             else:
                 print(f"{datetime.datetime.now()}: Nessuna canzone trovata!")
                 break

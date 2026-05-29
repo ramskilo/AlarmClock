@@ -1,3 +1,7 @@
+.gitignore
+.src/alarmclock/played.json
+.src/alarmclock/settings.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
