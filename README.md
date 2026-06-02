@@ -11,7 +11,7 @@ Settings are in settings.json in this format:
 	"DefaultHour" : 21,				--> Hour (24-hour format) on which the alarm triggers  - it can be null
 	"DefaultMinutes" : 26				--> Minutes (24-hour format) on which the alarm triggers - it can be null 
 }
-```json
+```
 
 
 
