@@ -1,9 +1,12 @@
 import datetime
+import subprocess
 import time
-from playsound3 import playsound
 import string, random, glob, json, signal, os
 from sys import exit
 from pathlib import Path
+from threading import Thread
+
+from alarmclock.server import AlarmController, create_server
 
 # Pipe per comunicazione tra handler e main
 rfd, wfd = os.pipe()
@@ -29,6 +32,25 @@ def load_json_data(file_ptr):
         print(f"Errore lettura JSON: {exc}")
         return {}
 
+def play_song(song_path, controller):
+    player = subprocess.Popen(
+        ["ffplay", "-nodisp", "-autoexit", "-loglevel", "error", song_path],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        while player.poll() is None:
+            if controller.consume_skip():
+                player.terminate()
+                player.wait()
+                print("Skip requested")
+                break
+            time.sleep(0.2)
+    finally:
+        if player.poll() is None:
+            player.terminate()
+            player.wait()
+
 def main():
     global l_times
     signal.signal(signal.SIGINT, handler)
@@ -46,6 +68,14 @@ def main():
         data = load_json_data(s)
         played = load_json_data(p)
 
+    controller = AlarmController()
+    http_host = data.get("HttpHost", "127.0.0.1")
+    http_port = int(data.get("HttpPort", 8765))
+    http_server = create_server(http_host, http_port, controller)
+    http_thread = Thread(target=http_server.serve_forever, daemon=True)
+    http_thread.start()
+    print(f"HTTP server listening on http://{http_host}:{http_port}")
+
     l_songs_directory = data.get('SongsDirectory', './')
     l_extension = data.get('MediaFileExtension', '*.mp3')
     l_number_of_songs = data.get('NumberOfSongsToPlay', 1)
@@ -60,40 +90,59 @@ def main():
     print(f"{datetime.datetime.now()}: Sveglia impostata alle {alarmHour}:{alarmMin}")
     start_time = datetime.datetime.now()
 
-    while l_times <= l_number_of_songs:
-                
-        # Controllo orario
-        if current_time.hour == int(alarmHour) and current_time.minute == int(alarmMin):
-            print(f"{datetime.datetime.now()}: Ora di svegliarsi!")
-            
-            # Costruzione lista canzoni (spostata fuori dal loop scelta per efficienza)
-            pattern = os.path.join(l_songs_directory, "*/", l_extension)
-            available_songs = glob.glob(pattern)
+    try:
+        while (l_times <= l_number_of_songs or controller.has_snooze_pending()) and not controller.is_stopped():
+            current_time = datetime.datetime.now()
+            snooze_expired = controller.consume_snooze()
 
-            # Filtra già suonate
-            pool = [s for s in available_songs if s not in played.get("songsPlayed", [])]
-            if not pool: pool = available_songs # Reset se tutte suonate
+            # Controllo orario
+            if (
+                snooze_expired
+                or (
+                    not controller.is_snoozed()
+                    and current_time.hour == int(alarmHour)
+                    and current_time.minute == int(alarmMin)
+                )
+            ):
+                if snooze_expired:
+                    l_times = 1
+                print(f"{datetime.datetime.now()}: Ora di svegliarsi!")
 
-            if pool:
-                song_to_play = random.choice(pool)
-                print(f"{datetime.datetime.now()}: Riproduzione: {song_to_play}")
-                
-                # Aggiorna played.json
-                played.setdefault("songsPlayed", []).append(song_to_play)
-                with open(played_file, 'w') as f:
-                    json.dump(played, f)
-                
-                # Suona
-                playsound(song_to_play)
-                l_times += 1
-                
-                # Aspetta per evitare che riparta nello stesso minuto
-                time.sleep(8) 
-            else:
-                print(f"{datetime.datetime.now()}: Nessuna canzone trovata!")
-                break
-        
-        time.sleep(30) # Controllo ogni 30 secondi (salva CPU e Log)
+                # Costruzione lista canzoni (spostata fuori dal loop scelta per efficienza)
+                pattern = os.path.join(l_songs_directory, "*/", l_extension)
+                available_songs = glob.glob(pattern)
+
+                # Filtra già suonate
+                pool = [s for s in available_songs if s not in played.get("songsPlayed", [])]
+                if not pool: pool = available_songs # Reset se tutte suonate
+
+                if pool:
+                    song_to_play = random.choice(pool)
+                    if controller.consume_skip():
+                        print("Skipping queued song")
+                        l_times += 1
+                        continue
+                    print(f"{datetime.datetime.now()}: Riproduzione: {song_to_play}")
+
+                    # Aggiorna played.json
+                    played.setdefault("songsPlayed", []).append(song_to_play)
+                    with open(played_file, 'w') as f:
+                        json.dump(played, f)
+
+                    # Suona
+                    play_song(song_to_play, controller)
+                    l_times += 1
+
+                    # Aspetta per evitare che riparta nello stesso minuto
+                    time.sleep(8)
+                else:
+                    print(f"{datetime.datetime.now()}: Nessuna canzone trovata!")
+                    break
+
+            time.sleep(30) # Controllo ogni 30 secondi (salva CPU e Log)
+    finally:
+        http_server.shutdown()
+        http_server.server_close()
 
 if __name__ == "__main__":
     main()
