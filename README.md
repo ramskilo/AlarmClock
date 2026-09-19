@@ -35,7 +35,8 @@ Do not use `0.0.0.0` in the browser address bar. Find the alarm computer's LAN
 address with `hostname -I`. Binding to all interfaces exposes the control API
 to the local network, so restrict the port with your firewall if needed.
 
-Send a `POST` request to one of these endpoints:
+Send a `POST` request to one of these endpoints from a client whose address is
+in `192.168.0.0/16`:
 
 ```text
 POST /snooze  # snooze for five minutes
@@ -44,10 +45,11 @@ POST /skip    # advance after the current song, or skip the queued song
 GET  /status  # inspect stopped and snoozed state
 ```
 
-For example:
+Commands from loopback, public addresses, and other private networks are
+rejected with `403 Forbidden`. For example, from a device on the allowed LAN:
 
 ```bash
-curl -X POST http://127.0.0.1:8765/snooze
-curl -X POST http://127.0.0.1:8765/stop
-curl -X POST http://127.0.0.1:8765/skip
+curl -X POST http://192.168.1.25:8765/snooze
+curl -X POST http://192.168.1.25:8765/stop
+curl -X POST http://192.168.1.25:8765/skip
 ```

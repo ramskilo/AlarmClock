@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import threading
 import time
@@ -5,6 +6,16 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+
+
+COMMAND_NETWORK = ipaddress.ip_network("192.168.0.0/16")
+
+
+def is_allowed_command_client(client_host: str) -> bool:
+    try:
+        return ipaddress.ip_address(client_host) in COMMAND_NETWORK
+    except ValueError:
+        return False
 
 
 class AlarmController:
@@ -60,6 +71,10 @@ class AlarmRequestHandler(BaseHTTPRequestHandler):
     controller: AlarmController
 
     def do_POST(self) -> None:
+        if not self._is_allowed_command_client():
+            self._send_json(HTTPStatus.FORBIDDEN, {"error": "command client not allowed"})
+            return
+
         commands = {
             "/snooze": self.controller.snooze,
             "/stop": self.controller.stop,
@@ -88,6 +103,9 @@ class AlarmRequestHandler(BaseHTTPRequestHandler):
             },
         )
 
+    def _is_allowed_command_client(self) -> bool:
+        return is_allowed_command_client(self.client_address[0])
+
     def _send_client(self) -> None:
         client_path = Path(__file__).with_name("web") / "index.html"
         try:
@@ -106,6 +124,8 @@ class AlarmRequestHandler(BaseHTTPRequestHandler):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
