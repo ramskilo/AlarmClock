@@ -3,5 +3,7 @@
 	"MediaFileExtension" : "*.mp3",
 	"NumberOfSongsToPlay" : 8,
 	"DefaultHour" : "",
-	"DefaultMinutes" : ""
+	"DefaultMinutes" : "",
+	"HttpHost" : "0.0.0.0",
+	"HttpPort" : 8765
 }
