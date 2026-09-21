@@ -53,3 +53,22 @@ curl -X POST http://192.168.1.25:8765/snooze
 curl -X POST http://192.168.1.25:8765/stop
 curl -X POST http://192.168.1.25:8765/skip
 ```
+# Installation
+
+Install on the Raspberry Pi
+Assuming the project is already on the Pi and you connect through SSH:
+
+```bash
+ssh <pi-user>@<raspberry-ip>
+cd /path/to/AlarmClock
+```
+
+Check the required software:
+tbd
+
+ffplay, used by the alarm to play songs, is included in the ffmpeg package.
+
+Create an isolated Python environment and install the project:
+
+
+tbd
