@@ -108,15 +108,21 @@ def main():
                     l_times = 1
                 print(f"{datetime.datetime.now()}: Ora di svegliarsi!")
 
-                # Costruzione lista canzoni (spostata fuori dal loop scelta per efficienza)
-                pattern = os.path.join(l_songs_directory, "*/", l_extension)
-                available_songs = glob.glob(pattern)
+                # Once triggered, play the requested batch without requiring the
+                # clock to remain in the alarm minute.
+                while l_times <= l_number_of_songs and not controller.is_stopped():
+                    pattern = os.path.join(l_songs_directory, "*/", l_extension)
+                    available_songs = glob.glob(pattern)
 
-                # Filtra già suonate
-                pool = [s for s in available_songs if s not in played.get("songsPlayed", [])]
-                if not pool: pool = available_songs # Reset se tutte suonate
+                    # Filtra già suonate
+                    pool = [s for s in available_songs if s not in played.get("songsPlayed", [])]
+                    if not pool:
+                        pool = available_songs  # Reset se tutte suonate
 
-                if pool:
+                    if not pool:
+                        print(f"{datetime.datetime.now()}: Nessuna canzone trovata!")
+                        break
+
                     song_to_play = random.choice(pool)
                     if controller.consume_skip():
                         print("Skipping queued song")
@@ -135,9 +141,6 @@ def main():
 
                     # Aspetta per evitare che riparta nello stesso minuto
                     time.sleep(8)
-                else:
-                    print(f"{datetime.datetime.now()}: Nessuna canzone trovata!")
-                    break
 
             time.sleep(30) # Controllo ogni 30 secondi (salva CPU e Log)
     finally:
