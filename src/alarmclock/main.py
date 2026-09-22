@@ -44,12 +44,23 @@ def play_song(song_path, controller):
                 player.terminate()
                 player.wait()
                 print("Skip requested")
-                break
+                return "skip"
+            if controller.is_stopped():
+                player.terminate()
+                player.wait()
+                print("Stop requested")
+                return "stop"
+            if controller.is_snoozed():
+                player.terminate()
+                player.wait()
+                print("Snooze requested")
+                return "snooze"
             time.sleep(0.2)
     finally:
         if player.poll() is None:
             player.terminate()
             player.wait()
+    return "completed"
 
 def main():
     global l_times
@@ -136,8 +147,11 @@ def main():
                         json.dump(played, f)
 
                     # Suona
-                    play_song(song_to_play, controller)
+                    playback_result = play_song(song_to_play, controller)
                     l_times += 1
+
+                    if playback_result in ("stop", "snooze"):
+                        break
 
                     # Aspetta per evitare che riparta nello stesso minuto
                     time.sleep(8)
